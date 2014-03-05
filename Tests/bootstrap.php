@@ -9,8 +9,12 @@
  * file that was distributed with this source code.
  */
 
+use Doctrine\Common\Annotations\AnnotationRegistry;
+
 if (file_exists($file = __DIR__.'/../vendor/autoload.php')) {
     $autoload = require_once $file;
+
+    AnnotationRegistry::registerLoader(array($autoload, 'loadClass'));
 } else {
     throw new RuntimeException('Install dependencies to run test suite.');
 }

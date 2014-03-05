@@ -1,21 +1,75 @@
 imports:
-    - { resource: security.yml }
+    - { resource: database.php }
 
 framework:
-    secret: test
+    secret:              test
+    form:                true
+    csrf_protection:     true
     test: ~
     session:
         storage_id: session.storage.mock_file
-    form:            true
-    csrf_protection: true
     validation:
         enabled: true
         enable_annotations: true
+    templating:
+            engines: [twig]
     router:
         resource: "%kernel.root_dir%/config/routing.yml"
-    templating:
-        engines: [twig]
+        strict_requirements: %kernel.debug%
 
 twig:
     debug:            %kernel.debug%
     strict_variables: %kernel.debug%
+
+doctrine:
+    orm:
+        auto_generate_proxy_classes: "%kernel.debug%"
+        auto_mapping: true
+
+security:
+    providers:
+        fos_userbundle:
+            id: fos_user.user_provider.username
+
+    encoders:
+        FOS\UserBundle\Model\UserInterface: sha512
+
+    firewalls:
+        main:
+            pattern: ^/
+            oauth:
+                resource_owners:
+                    facebook: /login/check-facebook
+                login_path: /login
+                failure_path: /connect
+                oauth_user_provider:
+                    service: hwi_oauth.user.provider.fosub_bridge
+            logout:       true
+            anonymous:    true
+
+fos_user:
+    db_driver: orm
+    firewall_name: main
+    user_class: HWI\Bundle\OAuthBundle\Tests\Functional\TestBundle\Entity\User
+    service:
+        mailer: fos_user.mailer.noop
+
+hwi_oauth:
+    firewall_name: main
+    resource_owners:
+        facebook:
+            type:                facebook
+            client_id:           id
+            client_secret:       secret
+            paths:
+                identifier: id
+                username: id
+    fosub:
+        username_iterations: 5
+        properties:
+            facebook: facebook_id
+            firstname: first_name
+            lastname: last_name
+            email: email
+            birthday: birthday
+    connect: ~
