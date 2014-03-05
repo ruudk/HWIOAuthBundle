@@ -98,10 +98,10 @@ class ConnectController extends ContainerAware
 
         $session = $request->getSession();
         $error = $session->get('_hwi_oauth.registration_error.'.$key);
-        $session->remove('_hwi_oauth.registration_error.'.$key);
 
         if (!($error instanceof AccountNotLinkedException) || (time() - $key > 300)) {
-            // todo: fix this
+            $session->remove('_hwi_oauth.registration_error.'.$key);
+
             throw new \Exception('Cannot register an account.');
         }
 
@@ -128,10 +128,6 @@ class ConnectController extends ContainerAware
                 'userInformation' => $userInformation,
             ));
         }
-
-        // reset the error in the session
-        $key = time();
-        $session->set('_hwi_oauth.registration_error.'.$key, $error);
 
         return $this->container->get('templating')->renderResponse('HWIOAuthBundle:Connect:registration.html.' . $this->getTemplatingEngine(), array(
             'key' => $key,
